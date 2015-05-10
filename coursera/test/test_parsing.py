@@ -72,6 +72,11 @@ def get_video(monkeypatch):
     monkeypatch.setattr(coursera_dl, 'get_video',
                         lambda session, href: None)
 
+    # Mock coursera_dl.get_on_demand_video_url
+    monkeypatch.setattr(coursera_dl, 'get_on_demand_video_url',
+                        lambda session, video_id: {'mp4': '{video_id}.mp4'.format(video_id=video_id),
+                                                   'srt': '{video_id}.srt'.format(video_id=video_id)})
+
 
 @pytest.mark.parametrize(
     "filename,num_sections,num_lectures,num_resources,num_videos", [
@@ -111,3 +116,45 @@ def test_parse(get_video, filename, num_sections, num_lectures, num_resources, n
 
         # mp4 count
         assert sum(r for f, r in resources if f == "mp4") == num_videos
+
+
+@pytest.mark.parametrize(
+    'filename, num_modules, num_sections, num_lectures, num_resources, num_videos',
+    [
+        ('regular-on-demand-syllabus-calculus1.json', 16, 79, 193, 386, 193),
+    ]
+)
+def test_parse_on_demand(get_video, filename, num_modules, num_sections,
+                         num_lectures, num_resources, num_videos):
+    """
+    Parse syllabus of on-demand courses.
+    """
+
+    syllabus_file = os.path.join(os.path.dirname(__file__), 'fixtures', 'json',
+                                 filename)
+
+    with open(syllabus_file) as syllabus:
+        syllabus_page = syllabus.read()
+
+        modules = coursera_dl.parse_on_demand_syllabus(None, syllabus_page)
+        with open('calculus1_syllabus', 'w') as hd:
+            hd.write(str(modules).encode('utf-8'))
+
+        # module count
+        assert len(modules) == num_modules
+
+        # section count
+        sections = [sec for m in modules for sec in m[1]]
+        assert len(sections) == num_sections
+
+        # lecture count
+        lectures = [lec for sec in sections for lec in sec[1]]
+        assert len(lectures) == num_lectures
+
+        # resource count
+        resources = [(res[0], len(res[1]))
+                     for lec in lectures for res in iteritems(lec[1])]
+        assert sum(r for f, r in resources) == num_resources
+
+        # video count
+        assert sum(r for f, r in resources if f == 'mp4') == num_videos
