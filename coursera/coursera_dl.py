@@ -1013,7 +1013,7 @@ def download_on_demand_class(args, class_name):
         sections = module[1]
 
         if not all_flag:
-            ans = input(prompt % module_name).lower()
+            ans = raw_input(prompt % module_name).lower()
             if ans in ['a', 'all']:
                 all_flag = True
             elif ans in ['y', 'yes']:
