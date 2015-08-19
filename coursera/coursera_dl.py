@@ -1023,7 +1023,7 @@ def download_on_demand_class(args, class_name):
             elif ans in ['q', 'quit']:
                 break
             else:
-                print 'unknow answer: continuing with download!'
+                print 'unknown answer: continuing with download!'
 
         result = download_lectures(
             downloader,
