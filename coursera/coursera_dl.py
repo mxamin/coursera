@@ -1005,10 +1005,25 @@ def download_on_demand_class(args, class_name):
     downloader = get_downloader(session, class_name, args)
 
     # obtain the resources
+    all_flag = False
     completed = True
+    prompt = 'Download module "%s"? [a -> all, y -> yes, n -> no, q -> quit] '
     for idx, module in enumerate(modules):
         module_name = '%02d_%s' % (idx + 1, module[0])
         sections = module[1]
+
+        if not all_flag:
+            ans = input(prompt % module_name).lower()
+            if ans in ['a', 'all']:
+                all_flag = True
+            elif ans in ['y', 'yes']:
+                pass
+            elif ans in ['n', 'no']:
+                continue
+            elif ans in ['q', 'quit']:
+                break
+            else:
+                print 'unknow answer: continuing with download!'
 
         result = download_lectures(
             downloader,
